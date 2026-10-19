@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = 'https://api.restful-api.dev';
 
+//API-001
 test('GET - List objects', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/objects`);
 
@@ -16,12 +17,45 @@ test('GET - List objects', async ({ request }) => {
     expect(body[0]).toHaveProperty('name');
 });
 
+//API-002
+test('create New object with wrong data format',async({request}) => {
+    let objects_id : string
+
+    //เก็บค่าส่งกลับ
+    const response = await request.post(`${BASE_URL}/objects`,{
+        
+        headers:{'Content-Type':'application/json'},
+        data : {
+            "name": "Apple MacBook Pro 16",
+            "year": 2019,
+            "price": 1849.99,
+            "CPU model": "Intel Core i9",
+            "Hard disk size": "1 TB"
+        }
+    })
+
+    const body = await response.json();
+    
+    objects_id = body.id
+    console.log('Status:', response.status());
+    console.log('Response:', JSON.stringify(body, null, 2));
+
+    expect(body.name).toBe('Apple MacBook Pro 16')
+    expect(body.data).toBeNull();
+
+
+
+    await request.delete(`${BASE_URL}/objects/${objects_id}`)
+
+
+})
+
 test('CRUD - Create, Read, Update and Delete object', async ({ request }) => {
     let objectId: string | undefined;
     let deleted = false;
 
     try {
-        // 1. CREATE
+        // 1. CREATE  API-003
         const createResponse = await request.post(`${BASE_URL}/objects`, {
             headers: {
             'Content-Type': 'application/json',
@@ -56,7 +90,7 @@ test('CRUD - Create, Read, Update and Delete object', async ({ request }) => {
         expect(created.data['CPU model']).toBe('Test CPU');
 
 
-
+        //API-004
         // 2. READ
         const getResponse = await request.get(
             `${BASE_URL}/objects/${objectId}`
@@ -71,7 +105,7 @@ test('CRUD - Create, Read, Update and Delete object', async ({ request }) => {
         expect(readBody.data).not.toBeNull();
         expect(readBody.data['CPU model']).toBe('Test CPU');
 
-        // 3. UPDATE
+        // 3. UPDATE API-005
         const updateResponse = await request.put(
             `${BASE_URL}/objects/${objectId}`,
             {
@@ -104,7 +138,7 @@ test('CRUD - Create, Read, Update and Delete object', async ({ request }) => {
 
         console.log('POST response:', JSON.stringify(updated, null, 2));
 
-        // 4. DELETE
+        // 4. DELETE API-006
         const deleteResponse = await request.delete(
             `${BASE_URL}/objects/${objectId}`
         );
@@ -112,14 +146,14 @@ test('CRUD - Create, Read, Update and Delete object', async ({ request }) => {
         expect(deleteResponse.status()).toBe(200);
         deleted = true;
 
-        // 5. VERIFY DELETION
+        // 5. VERIFY DELETION  API-007
         const verifyResponse = await request.get(
             `${BASE_URL}/objects/${objectId}`
         );
 
         expect(verifyResponse.status()).toBe(404);
     } finally {
-        // Cleanup หาก Test ล้มเหลวก่อนลบข้อมูลสำเร็จ
+        // Cleanup หาก Test ล้มเหลวก่อนลบข้อมูลสำเร็จ API -008
         if (objectId && !deleted) {
             await request.delete(`${BASE_URL}/objects/${objectId}`);
         }
