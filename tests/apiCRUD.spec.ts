@@ -44,9 +44,9 @@ test('create New object with wrong data format',async({request}) => {
     expect(body.data).toBeNull();
 
 
-
+    if ( objects_id) { 
     await request.delete(`${BASE_URL}/objects/${objects_id}`)
-
+    }
 
 })
 
